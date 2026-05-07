@@ -1,6 +1,6 @@
 # Ignora i dati
-data/raw/
-data/processed/
+data/00_raw/
+data/01_processed/
 *.zip
 *.json
 *.csv
