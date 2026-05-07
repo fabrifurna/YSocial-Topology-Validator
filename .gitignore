@@ -1,0 +1,19 @@
+# Ignora i dati
+data/raw/
+data/processed/
+*.zip
+*.json
+*.csv
+
+# Ignora gli ambienti virtuali Python
+venv/
+env/
+.venv/
+
+# Ignora i file di cache di Python
+__pycache__/
+*.pyc
+
+# Ignora file di sistema (Mac/Windows)
+.DS_Store
+Thumbs.db
