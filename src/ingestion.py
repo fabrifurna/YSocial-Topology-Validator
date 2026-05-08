@@ -53,7 +53,7 @@ class YSocialGraphBuilder:
             else ""
         )
         query_nodes = """
-            SELECT id, username, user_type, archetype, leaning, is_page
+            SELECT *
             FROM user_mgmt;
         """
         query_edges = f"""
