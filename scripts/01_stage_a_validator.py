@@ -1,14 +1,13 @@
-"""
-validator.py
-============
-Orchestrazione della pipeline per lo Stage A (Topological Stability Analysis).
+"""Stage A topological stability validation across N simulation runs.
 
-La classe StageAValidator coordina il caricamento di N file .sqlite, l'estrazione
-delle metriche topologiche, l'aggregazione in DataFrame e il calcolo delle
-statistiche di stabilità (media, std, intervallo di confidenza al 95%).
+Orchestrates loading, metric extraction, aggregation, and statistical
+analysis of network topologies to assess stability of graph properties
+under fixed LLM parameters.
 """
 
 import logging
+import os
+import sys
 from pathlib import Path
 from typing import Union, Optional, Dict, Any
 
@@ -17,8 +16,10 @@ import pandas as pd
 from scipy import stats
 from tqdm import tqdm
 
-from ingestion import YSocialGraphBuilder
-from topometrics import YSocialTopometrics
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
+from ysocial_validator.ingestion import YSocialGraphBuilder
+from ysocial_validator.topometrics import YSocialTopometrics
 
 logger = logging.getLogger(__name__)
 
@@ -31,69 +32,67 @@ KEY_METRICS = [
 
 
 class StageAValidator:
-    """Orchestrazione della validazione topologica su N run (Stage A).
+    """Orchestrates topological validation of N simulation runs (Stage A).
 
-    La classe carica N database SQLite da una cartella, estrae le metriche
-    topologiche di ognuno tramite YSocialGraphBuilder + YSocialTopometrics,
-    le aggrega in un DataFrame, e fornisce statistiche di stabilità
-    (media, std, intervallo di confidenza al 95%).
+    Loads N SQLite databases from a directory, extracts topological metrics
+    via YSocialGraphBuilder and YSocialTopometrics, aggregates into DataFrame,
+    and computes stability statistics (mean, std, 95% confidence intervals).
 
     Args:
-        data_dir: Percorso della cartella contenente i file .sqlite.
+        data_dir: Path to directory containing .sqlite files.
 
     Raises:
-        FileNotFoundError: Se la cartella non esiste.
-        ValueError: Se nessun file .sqlite viene trovato.
+        FileNotFoundError: If directory does not exist.
+        ValueError: If no .sqlite files found in directory.
     """
 
     def __init__(self, data_dir: Union[str, Path]) -> None:
         self.data_dir = Path(data_dir).resolve()
         if not self.data_dir.is_dir():
-            raise FileNotFoundError(f"Cartella non trovata: '{self.data_dir}'")
+            raise FileNotFoundError(f"Directory not found: '{self.data_dir}'")
 
         self.db_paths = self._discover_databases()
         if not self.db_paths:
-            raise ValueError(f"Nessun file .sqlite trovato in '{self.data_dir}'")
+            raise ValueError(f"No .sqlite files found in '{self.data_dir}'")
 
         self.results: list[Dict[str, Any]] = []
         logger.info(
-            "StageAValidator inizializzato — %d database trovati in '%s'",
+            "StageAValidator initialized — %d databases found in '%s'",
             len(self.db_paths), self.data_dir.name,
         )
 
     def _discover_databases(self) -> list[Path]:
-        """Scopre e ordina alfabeticamente i file .sqlite nella cartella."""
+        """Discover and sort .sqlite files in directory alphabetically."""
         paths = sorted(self.data_dir.glob("*.sqlite"))
-        logger.debug("Database scoperti: %s", [p.name for p in paths])
+        logger.debug("Databases discovered: %s", [p.name for p in paths])
         return paths
 
     def _extract_run_id(self, db_path: Path) -> str:
-        """Estrae il run_id dal nome del file (es. run01.sqlite → run01)."""
+        """Extract run identifier from filename stem (e.g., run01.sqlite → run01)."""
         return db_path.stem
 
     def _process_single_run(self, db_path: Path) -> dict:
-        """Processa un singolo database e restituisce il report."""
+        """Process single database and return metric report."""
         G = YSocialGraphBuilder(str(db_path)).load_follower_graph()
         report = YSocialTopometrics(G).generate_full_report()
         return report
 
     def process_runs(self) -> pd.DataFrame:
-        """Esegue la pipeline completa su tutti i database con progress bar.
+        """Execute complete pipeline on all databases with progress bar.
 
-        Per ogni file .sqlite nella cartella:
-        1. Estrae il run_id dal nome file
-        2. Carica il grafo tramite YSocialGraphBuilder
-        3. Calcola le metriche tramite YSocialTopometrics
-        4. Aggiunge le colonne run_id e db_path al report
+        For each .sqlite file in directory:
+        1. Extract run_id from filename
+        2. Load graph via YSocialGraphBuilder
+        3. Compute metrics via YSocialTopometrics
+        4. Append run_id and db_path to report
 
-        In caso di errore su una run, logga e continua alla successiva
-        senza interrompere il ciclo.
+        Failed runs are logged and skipped without interrupting iteration.
 
         Returns:
-            DataFrame con una riga per run e una colonna per metrica.
-            Le run fallite hanno una colonna 'error' con il messaggio.
+            DataFrame with one row per run and one column per metric.
+            Failed runs include an 'error' column with exception message.
         """
-        np.random.seed(42)
+        np.random.seed(42)  # Reproducibility
         self.results = []
 
         for db_path in tqdm(
@@ -108,14 +107,14 @@ class StageAValidator:
                 report["db_path"] = str(db_path)
                 self.results.append(report)
                 logger.info(
-                    "Run '%s' completata — nodi: %d, archi: %d",
+                    "Run '%s' completed — nodes: %d, edges: %d",
                     run_id,
                     report.get("num_nodes", "?"),
                     report.get("num_edges", "?"),
                 )
             except Exception as exc:
                 logger.error(
-                    "Errore durante il processing di run '%s' (%s): %s",
+                    "Error processing run '%s' (%s): %s",
                     run_id, db_path.name, exc,
                 )
                 self.results.append({
@@ -127,23 +126,22 @@ class StageAValidator:
         df = pd.DataFrame(self.results)
         n_ok = (~df.get("error", pd.Series([None] * len(df))).notna()).sum()
         logger.info(
-            "Stage A completato — %d/%d run processate con successo.",
+            "Stage A completed — %d/%d runs successful.",
             n_ok, len(df),
         )
         return df
 
     def save_raw_results(self, output_csv: Union[str, Path]) -> None:
-        """Salva il DataFrame grezzo dei risultati in CSV.
+        """Save raw results DataFrame to CSV.
 
         Args:
-            output_csv: Percorso del file CSV di output
-                (es. data/processed/stage_a_raw.csv).
+            output_csv: Output CSV file path (e.g., data/processed/stage_a_raw.csv).
 
         Raises:
-            ValueError: Se nessun run è stato ancora processato.
+            ValueError: If no runs have been processed yet.
         """
         if not self.results:
-            raise ValueError("Nessun risultato disponibile. Esegui process_runs() prima.")
+            raise ValueError("No results available. Run process_runs() first.")
 
         df = pd.DataFrame(self.results)
         output_csv = Path(output_csv).resolve()
@@ -151,7 +149,7 @@ class StageAValidator:
 
         df.to_csv(output_csv, index=False)
         logger.info(
-            "Risultati grezzi salvati — file: '%s', righe: %d",
+            "Raw results saved — file: '%s', rows: %d",
             output_csv, len(df),
         )
 
@@ -159,33 +157,33 @@ class StageAValidator:
         self,
         metrics: Optional[list[str]] = None,
     ) -> pd.DataFrame:
-        """Calcola statistiche di stabilità per le metriche numeriche chiave.
+        """Compute stability statistics for key topological metrics.
 
-        Per ogni metrica richiesta (default: alpha_in_degree, modularity,
-        average_clustering, density), calcola:
+        For each requested metric (default: alpha_in_degree, modularity,
+        average_clustering, density), computes:
 
-        - **n**: numero di osservazioni non mancanti
-        - **mean**: media aritmetica
-        - **std**: deviazione standard (ddof=1)
-        - **sem**: errore standard della media
-        - **ci95_low, ci95_high**: intervallo di confidenza al 95%
-          (basato su t-distribution, appropriato per N ≤ 30)
-        - **cv**: coefficiente di variazione (σ/μ, indicatore di stabilità relativa)
+        - **n**: number of non-missing observations
+        - **mean**: arithmetic mean
+        - **std**: sample standard deviation (ddof=1)
+        - **sem**: standard error of the mean
+        - **ci95_low, ci95_high**: 95% confidence interval via t-distribution
+          (appropriate for N ≤ 30)
+        - **cv**: coefficient of variation (σ/μ, relative stability indicator)
 
         Args:
-            metrics: Lista di metriche da aggregare. Se None, usa KEY_METRICS
+            metrics: Metrics to aggregate. Defaults to KEY_METRICS
                 (alpha_in_degree, modularity, average_clustering, density).
 
         Returns:
-            DataFrame con indice = nome metrica e colonne
+            DataFrame indexed by metric name with columns
             ['n', 'mean', 'std', 'sem', 'ci95_low', 'ci95_high', 'cv'].
 
         Raises:
-            ValueError: Se nessun risultato è disponibile.
-            KeyError: Se una metrica richiesta non esiste nel dataset.
+            ValueError: If no results are available.
+            KeyError: If a requested metric is absent from the dataset.
         """
         if not self.results:
-            raise ValueError("Nessun risultato disponibile. Esegui process_runs() prima.")
+            raise ValueError("No results available. Run process_runs() first.")
 
         metrics = metrics or KEY_METRICS
         df = pd.DataFrame(self.results)
@@ -193,12 +191,12 @@ class StageAValidator:
         rows = []
         for metric in metrics:
             if metric not in df.columns:
-                logger.warning("Metrica '%s' non trovata. Saltata.", metric)
+                logger.warning("Metric '%s' not found in DataFrame. Skipped.", metric)
                 continue
 
             series = df[metric].dropna()
             if series.empty:
-                logger.warning("Metrica '%s' contiene solo NaN. Saltata.", metric)
+                logger.warning("Metric '%s' contains only NaN values. Skipped.", metric)
                 continue
 
             n = len(series)
@@ -221,7 +219,7 @@ class StageAValidator:
 
         result_df = pd.DataFrame(rows).set_index("metric")
         logger.info(
-            "Statistiche di stabilità calcolate — %d metriche",
+            "Stability statistics computed — %d metrics.",
             len(result_df),
         )
         return result_df
@@ -230,22 +228,22 @@ class StageAValidator:
         self,
         metrics: Optional[list[str]] = None,
     ) -> Dict[str, Any]:
-        """Genera un report completo di stabilità topologica (Stage A).
+        """Assemble complete topological stability report (Stage A).
 
-        Raccoglie i risultati grezzi e le statistiche aggregate in un
-        unico dizionario per analisi e export.
+        Packages raw results and aggregated statistics into a single
+        dictionary for downstream analysis and export.
 
         Args:
-            metrics: Lista di metriche da includere nelle statistiche.
-                Se None, usa KEY_METRICS.
+            metrics: Metrics to include in stability statistics.
+                Defaults to KEY_METRICS.
 
         Returns:
-            Dizionario con chiavi:
-            - ``'raw'``: DataFrame grezzo (N righe, una per run)
-            - ``'stability'``: DataFrame di statistiche aggregate per metrica
+            Dictionary with keys:
+            - ``'raw'``: raw DataFrame (N rows, one per run)
+            - ``'stability'``: aggregated statistics DataFrame, one row per metric
         """
         if not self.results:
-            raise ValueError("Nessun risultato disponibile. Esegui process_runs() prima.")
+            raise ValueError("No results available. Run process_runs() first.")
 
         raw_df = pd.DataFrame(self.results)
         stability_df = self.compute_stability_metrics(metrics=metrics)

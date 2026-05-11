@@ -6,3 +6,4 @@ powerlaw
 scikit-learn
 matplotlib
 seaborn 
+tqdm
