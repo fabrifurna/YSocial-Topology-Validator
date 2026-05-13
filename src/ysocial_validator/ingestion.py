@@ -57,7 +57,7 @@ class YSocialGraphBuilder:
             else ""
         )
         query_nodes = """
-            SELECT id, username, user_type, archetype, leaning, is_page
+            SELECT *
             FROM user_mgmt;
         """
         query_edges = f"""
@@ -110,8 +110,8 @@ class YSocialGraphBuilder:
                 from events up to and including this round.
 
         Returns:
-            DiGraph with node attributes: username, user_type, archetype,
-            leaning, is_page. Edge attribute: round_created.
+            DiGraph whose node attributes mirror all columns in user_mgmt
+            (except id, which becomes the node key). Edge attribute: round_created.
 
         Raises:
             ValueError: If user_mgmt table is empty.
