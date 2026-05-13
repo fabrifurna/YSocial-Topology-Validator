@@ -51,10 +51,7 @@ class StageBVisualizer:
         if self.df.empty:
             raise ValueError("CSV file is empty.")
 
-        logger.info(
-            "StageBVisualizer initialized — CSV loaded with %d rows.",
-            len(self.df),
-        )
+        logger.info("stage B data loaded: %d rows", len(self.df))
 
     def plot_modularity_comparison(
         self,

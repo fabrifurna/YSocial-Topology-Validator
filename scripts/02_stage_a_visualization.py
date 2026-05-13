@@ -56,10 +56,7 @@ class StageAVisualizer:
                 missing,
             )
 
-        logger.info(
-            "StageAVisualizer initialized — CSV loaded with %d rows.",
-            len(self.df),
-        )
+        logger.info("loaded %d runs from '%s'", len(self.df), self.csv_path.name)
 
     def plot_stability_distributions(self, output_png: Union[str, Path]) -> None:
         """Generate a 2×2 boxplot grid showing per-metric distributions.

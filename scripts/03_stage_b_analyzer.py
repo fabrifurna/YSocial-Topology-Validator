@@ -61,10 +61,7 @@ class StageBAnalyzer:
             )
 
         self.results: List[Dict[str, Any]] = []
-        logger.info(
-            "StageBAnalyzer initialized — %d conditions found in '%s'",
-            len(self.conditions), self.base_dir.name,
-        )
+        logger.info("found %d condition dirs in '%s'", len(self.conditions), self.base_dir.name)
 
     def _discover_conditions(self) -> List[str]:
         """Discover and sort condition directories alphabetically."""
@@ -77,16 +74,12 @@ class StageBAnalyzer:
         return cond_ids
 
     def _discover_runs_in_condition(self, condition_dir: Path) -> List[Path]:
-        """Discover and sort .sqlite run files within a condition directory."""
-        db_paths = sorted(condition_dir.glob("*.sqlite"))
-        return db_paths
+        return sorted(condition_dir.glob("*.sqlite"))
 
     def _extract_run_id(self, db_path: Path) -> str:
-        """Extract run identifier from filename stem (e.g., run0.sqlite → run0)."""
         return db_path.stem
 
     def _process_single_run(self, db_path: Path) -> dict:
-        """Load graph from a single database and return its metric report."""
         G = YSocialGraphBuilder(str(db_path)).load_follower_graph()
         report = YSocialTopometrics(G).generate_full_report()
         return report

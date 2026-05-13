@@ -53,10 +53,7 @@ class StageBHypothesisTesting:
             raise ValueError("CSV file is empty.")
 
         self.results: List[Dict] = []
-        logger.info(
-            "StageBHypothesisTesting initialized — %d rows loaded.",
-            len(self.df),
-        )
+        logger.info("%d records loaded for hypothesis testing", len(self.df))
 
     @staticmethod
     def _significance_flag(p_value: float) -> str:

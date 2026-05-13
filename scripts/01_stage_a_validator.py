@@ -68,11 +68,9 @@ class StageAValidator:
         return paths
 
     def _extract_run_id(self, db_path: Path) -> str:
-        """Extract run identifier from filename stem (e.g., run01.sqlite → run01)."""
         return db_path.stem
 
     def _process_single_run(self, db_path: Path) -> dict:
-        """Process single database and return metric report."""
         G = YSocialGraphBuilder(str(db_path)).load_follower_graph()
         report = YSocialTopometrics(G).generate_full_report()
         return report

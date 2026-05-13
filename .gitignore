@@ -1,19 +1,19 @@
-# Ignora i dati
+# raw and processed data (SQLite runs, CSVs, figures)
 data/00_raw/
 data/01_processed/
 *.zip
 *.json
 *.csv
 
-# Ignora gli ambienti virtuali Python
+# virtual environments
 venv/
 env/
 .venv/
 
-# Ignora i file di cache di Python
+# Python cache
 __pycache__/
 *.pyc
 
-# Ignora file di sistema (Mac/Windows)
+# OS files
 .DS_Store
 Thumbs.db
