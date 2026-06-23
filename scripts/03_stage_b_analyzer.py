@@ -19,8 +19,7 @@ from tqdm import tqdm
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
-from ysocial_validator.ingestion import YSocialGraphBuilder
-from ysocial_validator.topometrics import YSocialTopometrics
+from sdt_netval import load_network, GraphMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -80,8 +79,8 @@ class StageBAnalyzer:
         return db_path.stem
 
     def _process_single_run(self, db_path: Path) -> dict:
-        G = YSocialGraphBuilder(str(db_path)).load_follower_graph()
-        report = YSocialTopometrics(G).generate_full_report()
+        G = load_network(db_path)
+        report = GraphMetrics(G).generate_full_report()
         return report
 
     def process_all_runs(self) -> pd.DataFrame:

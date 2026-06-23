@@ -13,6 +13,22 @@ env/
 # Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# package build artifacts
+*.egg-info/
+dist/
+build/
+*.egg
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
 
 # OS files
 .DS_Store
