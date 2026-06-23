@@ -1,14 +1,17 @@
-"""Comparative figures for Stage B sensitivity analysis.
+"""Comparative figures for Stage B sensitivity analysis — entry point.
 
 Produces per-condition modularity plots (the primary indicator of polarization
 and Average Persona Bias), with a reference line for the baseline condition (c0).
+
+Usage:
+    python scripts/04_stage_b_visualization.py
 """
 
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import Union, Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -110,6 +113,8 @@ class StageBVisualizer:
             data=df_filtered,
             x="condition_label",
             y="modularity",
+            hue="condition_label",
+            legend=False,
             ax=ax,
             palette="Set2",
             width=0.6,
@@ -190,3 +195,22 @@ class StageBVisualizer:
             })
 
         return pd.DataFrame(summary_rows)
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+
+INPUT_CSV = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_b_raw.csv"
+OUTPUT_PNG = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_b_modularity_comparison.png"
+
+
+if __name__ == "__main__":
+    logger.info("=== Stage B — Visualization ===")
+    visualizer = StageBVisualizer(INPUT_CSV)
+    visualizer.plot_modularity_comparison(OUTPUT_PNG)
+    print(visualizer.get_summary_statistics().to_string(index=False))
+    logger.info("=== Visualization complete ===")

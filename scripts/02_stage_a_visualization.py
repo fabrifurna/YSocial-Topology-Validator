@@ -1,14 +1,17 @@
-"""Academic figures for Stage A topological stability.
+"""Academic figures for Stage A topological stability — entry point.
 
 Produces high-resolution (300 dpi) distribution plots of key metrics
 across N simulation runs, supporting visual assessment of inter-run variability.
+
+Usage:
+    python scripts/02_stage_a_visualization.py
 """
 
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import Union, Optional, Dict, Any
+from typing import Any, Dict, Optional, Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -95,7 +98,7 @@ class StageAVisualizer:
                 y=metric,
                 ax=ax,
                 width=0.5,
-                palette="Set2",
+                color=sns.color_palette("Set2")[idx],
             )
 
             sns.stripplot(
@@ -165,3 +168,22 @@ class StageAVisualizer:
             )
         report_lines.append("")
         return "\n".join(report_lines)
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+
+INPUT_CSV = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_a_raw.csv"
+OUTPUT_PNG = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_a_stability.png"
+
+
+if __name__ == "__main__":
+    logger.info("=== Stage A — Visualization ===")
+    visualizer = StageAVisualizer(INPUT_CSV)
+    visualizer.plot_stability_distributions(OUTPUT_PNG)
+    print(visualizer.plot_summary_statistics())
+    logger.info("=== Visualization complete ===")

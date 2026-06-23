@@ -1,15 +1,18 @@
-"""Stage B hypothesis testing via Mann-Whitney U test.
+"""Stage B hypothesis testing via Mann-Whitney U test — entry point.
 
 Tests whether modularity differs significantly between the baseline condition (c0)
 and each experimental condition, using a non-parametric two-sided test appropriate
 for N=10 observations per group.
+
+Usage:
+    python scripts/05_stage_b_hypothesis.py
 """
 
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import Union, List, Dict, Optional
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from scipy import stats
@@ -230,3 +233,25 @@ class StageBHypothesisTesting:
 
         df = pd.DataFrame(self.results)
         return df[df["p_value"] < alpha]["Condition"].tolist()
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+    datefmt="%H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+
+INPUT_CSV = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_b_raw.csv"
+OUTPUT_CSV = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_b_pvalues.csv"
+
+
+if __name__ == "__main__":
+    logger.info("=== Stage B — Hypothesis Testing ===")
+    tester = StageBHypothesisTesting(INPUT_CSV)
+    tester.run_tests()
+    tester.print_results(verbose=True)
+    tester.save_results(OUTPUT_CSV)
+    significant = tester.get_significant_conditions()
+    logger.info("Significant conditions (p<0.05): %s", significant)
+    logger.info("=== Hypothesis testing complete ===")
