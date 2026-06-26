@@ -23,9 +23,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "00_raw" / "benchmark_runs"
-OUTPUT_RAW = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_a_raw.csv"
-OUTPUT_STABILITY = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_a_stability.csv"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "00_raw" / "01_legacy_tomasevic" / "benchmark_runs"
+OUTPUT_RAW = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "01_legacy_tomasevic" / "stage_a_raw.csv"
+OUTPUT_STABILITY = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "01_legacy_tomasevic" / "stage_a_stability.csv"
 
 
 if __name__ == "__main__":

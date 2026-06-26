@@ -1,9 +1,12 @@
-# raw and processed data (SQLite runs, CSVs, figures)
-data/00_raw/
-data/01_processed/
-*.zip
-*.json
-*.csv
+# raw data files — contenuto ignorato, struttura cartelle tracciata via .gitkeep
+data/00_raw/**
+!data/00_raw/**/
+!data/00_raw/**/.gitkeep
+
+# output files — contenuto ignorato, struttura cartelle tracciata via .gitkeep
+data/01_processed/**
+!data/01_processed/**/
+!data/01_processed/**/.gitkeep
 
 # virtual environments
 venv/

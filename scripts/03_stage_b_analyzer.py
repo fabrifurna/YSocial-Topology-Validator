@@ -23,9 +23,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "00_raw" / "sensitivity_runs"
-OUTPUT_RAW = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_b_raw.csv"
-OUTPUT_AGGREGATED = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_b_aggregated.csv"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "00_raw" / "01_legacy_tomasevic" / "sensitivity_runs"
+OUTPUT_RAW = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "01_legacy_tomasevic" / "stage_b_raw.csv"
+OUTPUT_AGGREGATED = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "01_legacy_tomasevic" / "stage_b_aggregated.csv"
 
 
 if __name__ == "__main__":

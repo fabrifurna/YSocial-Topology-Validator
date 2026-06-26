@@ -204,8 +204,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-INPUT_CSV = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_b_raw.csv"
-OUTPUT_PNG = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "stage_b_modularity_comparison.png"
+INPUT_CSV = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "01_legacy_tomasevic" / "stage_b_raw.csv"
+OUTPUT_PNG = Path(__file__).resolve().parents[1] / "data" / "01_processed" / "01_legacy_tomasevic" / "stage_b_modularity_comparison.png"
 
 
 if __name__ == "__main__":

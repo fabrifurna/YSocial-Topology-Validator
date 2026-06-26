@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"d:/University/Social Network Analysis/sdt-netval\" show HEAD:README.md)",
+      "PowerShell(jupyter kernelspec list)"
+    ]
+  }
+}
