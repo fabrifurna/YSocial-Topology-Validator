@@ -41,7 +41,7 @@ class StageAValidator:
         ValueError: If no supported simulation files found in directory.
     """
 
-    _SUPPORTED_EXTENSIONS = (".sqlite", ".csv", ".zip")
+    _SUPPORTED_EXTENSIONS = (".sqlite", ".db", ".sqlite3", ".csv", ".zip")
 
     def __init__(self, data_dir: Union[str, Path]) -> None:
         self.data_dir = Path(data_dir).resolve()

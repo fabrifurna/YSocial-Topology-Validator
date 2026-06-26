@@ -44,7 +44,7 @@ class StageBAnalyzer:
         ValueError: If no condition subdirectories are found.
     """
 
-    _SUPPORTED_EXTENSIONS = (".sqlite", ".csv", ".zip")
+    _SUPPORTED_EXTENSIONS = (".sqlite", ".db", ".sqlite3", ".csv", ".zip")
     _CONDITION_PREFIXES = ("c", "condition_")
 
     def __init__(self, base_dir: Union[str, Path]) -> None:

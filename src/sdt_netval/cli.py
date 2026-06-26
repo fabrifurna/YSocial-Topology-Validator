@@ -210,7 +210,7 @@ def main() -> None:
     # -- analyze --
     p_analyze = sub.add_parser(
         "analyze",
-        help="Compute topology metrics for a single network file (.sqlite, .csv, .zip).",
+        help="Compute topology metrics for a single network file (.sqlite/.db, .csv, .zip).",
     )
     p_analyze.add_argument("file", help="Path to the network file.")
     p_analyze.add_argument(

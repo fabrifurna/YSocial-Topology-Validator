@@ -22,7 +22,7 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-_SUPPORTED = frozenset({".sqlite", ".zip", ".csv"})
+_SUPPORTED = frozenset({".sqlite", ".db", ".sqlite3", ".zip", ".csv"})
 _FOLLOW_ACTIONS = frozenset({"follow", "create"})
 _EDGE_KEYWORDS = frozenset({"edge", "follow", "link", "network", "relation"})
 
@@ -79,7 +79,7 @@ def load_network(
 
     logger.info("Loading '%s' (format: %s)", p.name, ext)
 
-    if ext == ".sqlite":
+    if ext in {".sqlite", ".db", ".sqlite3"}:
         return _parse_sqlite(p, end_round=end_round)
     if ext == ".zip":
         return _parse_zip(p, edge_file=edge_file)
